@@ -2,7 +2,7 @@
 Tool using scipy.optimize.minimize to fit histograms to useful functional forms, with uncertainties on fit parameters reported.
 
 Example usage:
-
+```
 import GenericHistFit.GHF as ghf
 import numpy as np
 x = -2*np.log(np.random.random((10000)))
@@ -25,3 +25,4 @@ print('Fit values:  ' + str(thisfit.bestfit))
 print('Fit uncertainty:  ' + str(thisfit.bestfit_err))
 print('Sigma deviation:  ' + str(sigma_off))
 print('Reduced Chi^2:  ' + str(thisfit.chisq_nd))
+```
