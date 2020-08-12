@@ -62,3 +62,25 @@ print('Fit values:  ' + str(thisfit.bestfit))
 print('Fit uncertainty:  ' + str(thisfit.bestfit_err))
 print('Sigma deviation:  ' + str(sigma_off))
 print('Reduced Chi^2:  ' + str(thisfit.chisq_nd))
+
+#%% Correlated uncertainties -- broad peak on questionable background
+x = np.random.randn((1000))*5
+y = 5*np.random.random((1000))-2.5
+d = np.append(x,y)
+hist_out = np.histogram(d, bins=1000, range=(-2,2))
+
+thisfit = ghf.HistFit(*hist_out)
+
+thisfit.addfun(ghf.GHF_Gaussian(), [80, 0, 5])
+thisfit.addfun(ghf.GHF_flat(), 200)
+trueparams = np.float64([200/np.sqrt(2*np.pi), 0, 5, 200])
+
+thisfit.fit()
+
+sigma_off = (thisfit.bestfit - trueparams) / thisfit.bestfit_err
+print('*** Gaussian with Background, correlated uncertainties ***')
+print('Success:  ' + str(thisfit.fit_out.success))
+print('Fit values:  ' + str(thisfit.bestfit))
+print('Fit uncertainty:  ' + str(thisfit.bestfit_err))
+print('Sigma deviation:  ' + str(sigma_off))
+print('Reduced Chi^2:  ' + str(thisfit.chisq_nd))
