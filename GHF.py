@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import minimize as fmin
+from scipy.special import erf as erf
 '''
 This module defince the HistFit and GHFfitfun classes, as well as the
 GHF_xxxx subclasses of GHFfitfun.
@@ -332,4 +333,50 @@ class GHF_flat(GHFfitfun):
         self.v = self.dvda[0] * self.params[0]
     def pdf(self, x):
         result = self.params[0] + np.zeros(x.shape, dtype=np.float64)
+        return result
+
+class GHF_Gaussian(GHFfitfun):
+    ''' Gaussian distribution.  Defined as:
+        a = params[0]
+        mu = params[1]
+        sig = params[2]
+        '''
+    numparams = 3
+    def calculate(self):
+        a = self.params[0]
+        mu = self.params[1]
+        sig = self.params[2]
+        self.v = np.sqrt(np.pi*0.5) * a * sig * \
+            np.diff(erf((self.binedges - mu)/(np.sqrt(2)*sig)))
+        
+        gvalues = self.pdf(self.binedges)
+        xgvalues = (self.binedges - mu) * gvalues
+        x2gvalues = (self.binedges- mu) * xgvalues
+        x3gvalues = (self.binedges - mu) * x2gvalues
+        
+        dgvalues = np.diff(gvalues)
+        dxgvalues = np.diff(xgvalues)
+        dx2gvalues = np.diff(x2gvalues)
+        dx3gvalues = np.diff(x3gvalues)
+        
+        self.dvda[0] = self.v / a
+        self.dvda[1] = -dgvalues
+        self.dvda[2] = (self.v - dxgvalues)/sig
+        
+        self.d2vda2[1,1] = -dxgvalues * sig**-2
+        self.d2vda2[2,2] = -dx3gvalues * sig**-4
+        
+        self.d2vda2[0,1] = self.dvda[1] / a
+        self.d2vda2[0,2] = self.dvda[2] / a
+        self.d2vda2[1,2] = -dx2gvalues * sig**-3
+        
+        self.d2vda2[1,0] = self.d2vda2[0,1]
+        self.d2vda2[2,0] = self.d2vda2[0,2]
+        self.d2vda2[2,1] = self.d2vda2[1,2]
+        
+    def pdf(self, x):
+        a = self.params[0]
+        mu = self.params[1]
+        sig = self.params[2]
+        result = a * np.exp(-(x-mu)**2/(2*sig**2))
         return result
