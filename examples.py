@@ -3,7 +3,7 @@ import numpy as np
 
 #%% Gaussian
 x = np.random.randn((1000))*3 + 7
-hist_out = np.histogram(x, bins=100, range=(5,10))
+hist_out = np.histogram(x, bins=1000, range=(5,30))
 
 thisfit = ghf.HistFit(*hist_out)
 
@@ -44,7 +44,7 @@ print('Reduced Chi^2:  ' + str(thisfit.chisq_nd))
 
 #%% Gaussian with fixed mean
 x = np.random.randn((1000)) * 75
-hist_out = np.histogram(x, bins=100, range=(-50, 100))
+hist_out = np.histogram(x, bins=100, range=(-50, 150))
 
 thisfit = ghf.HistFit(*hist_out)
 
