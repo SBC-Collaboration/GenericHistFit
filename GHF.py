@@ -180,10 +180,10 @@ class HistFit:
             self.v += \
                 self.fitfun[i_f].v
             self.dvda[self.paramposts[i_f]:self.paramposts[i_f+1], :] += \
-                self.fitfun[i_f].dvda
+                self.fitfun[i_f].dvda_masked
             self.d2vda2[self.paramposts[i_f]:self.paramposts[i_f+1],
                         self.paramposts[i_f]:self.paramposts[i_f+1], :] += \
-                self.fitfun[i_f].d2vda2
+                self.fitfun[i_f].d2vda2_masked
         
         self.llp = np.float64(0)
         self.dllpda[:] = 0
@@ -244,11 +244,16 @@ class GHFfitfun:
                 self.params[~self.parammask] = fixedparams
         self.binedges = np.zeros((2), dtype=np.float64)
         self.v = np.zeros((self.binedges.size-1), dtype=np.float64)
-        self.dvda = np.zeros((self.numparams_eff, self.binedges.size-1),
+        self.dvda = np.zeros((self.numparams, self.binedges.size-1),
                               dtype=np.float64)
-        self.d2vda2 = np.zeros((self.numparams_eff, self.numparams_eff,
+        self.d2vda2 = np.zeros((self.numparams, self.numparams,
                                 self.binedges.size-1),
                                dtype=np.float64)
+        self.dvda_masked = np.zeros((self.numparams_eff, self.binedges.size-1),
+                                    dtype=np.float64)
+        self.d2vda2_masked = np.zeros((self.numparams_eff, self.numparams_eff,
+                                       self.binedges.size-1),
+                                      dtype=np.float64)
     
     def update_binedges(self, binedges):
         ''' Updates the binedges and allocates the output arrays accordingly.
@@ -256,14 +261,20 @@ class GHFfitfun:
             '''
         self.binedges = binedges.copy()
         self.v = np.zeros((binedges.size-1), dtype=np.float64)
-        self.dvda = np.zeros((self.numparams_eff, binedges.size-1),
+        self.dvda = np.zeros((self.numparams, self.binedges.size-1),
                               dtype=np.float64)
-        self.d2vda2 = np.zeros((self.numparams_eff, self.numparams_eff,
-                                binedges.size-1),
+        self.d2vda2 = np.zeros((self.numparams, self.numparams,
+                                self.binedges.size-1),
                                dtype=np.float64)
+        self.dvda_masked = np.zeros((self.numparams_eff, self.binedges.size-1),
+                                    dtype=np.float64)
+        self.d2vda2_masked = np.zeros((self.numparams_eff, self.numparams_eff,
+                                       self.binedges.size-1),
+                                      dtype=np.float64)
         if not np.any(np.isnan(self.params)):
-            self.calculate()        
-
+            self.calculate()
+            self.apply_mask()
+    
     def update_params(self, newparams):
         ''' Updates the current parameters and runs the calculation --- unless
             the new parameters are identical to the old ones.
@@ -271,6 +282,14 @@ class GHFfitfun:
         if not np.all(self.params[self.parammask]==newparams):
             self.params[self.parammask] = newparams
             self.calculate()
+            self.apply_mask()
+    
+    def apply_mask(self):
+        ''' Applies mask
+            '''
+        self.dvda_masked = self.dvda[self.parammask, :]
+        self.d2vda2_masked = self.d2vda2[self.parammask, :]
+
     
     def calculate(self):
         ''' This must be filled in for child classes.  This method should
