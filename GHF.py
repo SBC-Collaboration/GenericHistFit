@@ -379,7 +379,12 @@ class GHF_Gaussian(GHFfitfun):
         sig = self.params[2]
         self.v = np.sqrt(np.pi*0.5) * a * sig * \
             np.diff(erf((self.binedges - mu)/(np.sqrt(2)*sig)))
-        
+        badv = self.v==0
+        if np.any(badv):
+            binwidths = 0.5*np.diff(self.binedges)
+            bincenters = self.binedges[:-1] + binwidths
+            self.v[badv] = self.pdf(bincenters[badv]) * binwidths[badv]
+
         gvalues = self.pdf(self.binedges)
         xgvalues = (self.binedges - mu) * gvalues
         x2gvalues = (self.binedges- mu) * xgvalues
@@ -404,7 +409,7 @@ class GHF_Gaussian(GHFfitfun):
         self.d2vda2[1,0] = self.d2vda2[0,1]
         self.d2vda2[2,0] = self.d2vda2[0,2]
         self.d2vda2[2,1] = self.d2vda2[1,2]
-        
+
     def pdf(self, x):
         a = self.params[0]
         mu = self.params[1]
