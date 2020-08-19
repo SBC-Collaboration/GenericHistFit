@@ -13,7 +13,7 @@ setuptools.setup(
   author='C.E. Dahl',
   author_email='cdahl@northwestern.edu',
   license='MIT',
-  packages=setuptools.find_packages(),
+  packages=setuptools.find_packages(), #include=["GenericHistFit","GHF"]),
   classifiers=[
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
