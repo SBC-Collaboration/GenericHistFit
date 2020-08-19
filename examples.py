@@ -1,4 +1,4 @@
-import GHF as ghf
+import GenericHistFit.GHF as ghf
 import numpy as np
 
 #%% Gaussian
